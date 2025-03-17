@@ -15,6 +15,7 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+LOGIN_REDIRECT_URL = 'blog:index'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -28,6 +29,9 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+LOGIN_URL = 'login'
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -37,14 +41,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'reat_framework',
+    'rest_framework',
     'corsheaders',
-<<<<<<< refs/remotes/origin/feature-backend
-=======
     'rest_framework.authtoken',
     'djoser',
     'blog',
->>>>>>> local
 ]
 
 MIDDLEWARE = [
@@ -59,15 +60,27 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-<<<<<<< refs/remotes/origin/feature-backend
-    "http://127.0.0.1:8000/",
-=======
     "http://127.0.0.1:8000",
     "http://localhost:8080",
->>>>>>> local
 ]
 
 ROOT_URLCONF = 'bloghub.urls'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
+}
+
+DJOSER = {
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    'SERIALIZERS': {
+        'user_create': 'blog.serializers.UserCreateSerializer',
+    },
+}
 
 TEMPLATES = [
     {
