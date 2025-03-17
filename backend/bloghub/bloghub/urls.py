@@ -14,9 +14,29 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+<<<<<<< refs/remotes/origin/feature-backend
 from django.contrib import admin
 from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 ]
+=======
+
+from blog.views import RegisterView
+from django.contrib import admin
+from django.urls import path
+from django.http import HttpResponse
+
+def home(request):
+    return HttpResponse("Добро пожаловать в BlogHub!")
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("", home, name="home"),  # Добавляем маршрут для "/"
+    path('api/register/', RegisterView.as_view(), name='register'),
+]
+
+
+ 
+>>>>>>> local

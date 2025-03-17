@@ -39,6 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'reat_framework',
     'corsheaders',
+<<<<<<< refs/remotes/origin/feature-backend
+=======
+    'rest_framework.authtoken',
+    'djoser',
+    'blog',
+>>>>>>> local
 ]
 
 MIDDLEWARE = [
@@ -53,7 +59,12 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
+<<<<<<< refs/remotes/origin/feature-backend
     "http://127.0.0.1:8000/",
+=======
+    "http://127.0.0.1:8000",
+    "http://localhost:8080",
+>>>>>>> local
 ]
 
 ROOT_URLCONF = 'bloghub.urls'
