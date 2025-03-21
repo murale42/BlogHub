@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="wrapper">
     <HeaderComponent />
-    <div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="form-container">
       <div class="card">
         <div class="card-header text-center">
           Войти в систему
@@ -10,19 +10,37 @@
           <p v-if="errorMessage" class="text-danger text-center">{{ errorMessage }}</p>
           <form @submit.prevent="login">
             <div class="mb-2">
-              <label for="username" class="form-label">Логин</label>
-              <input type="text" id="username" v-model="form.username" class="form-control" required />
+              <label for="username" class="form-label">Имя пользователя</label>
+              <input 
+                type="text" 
+                id="username" 
+                v-model="form.username" 
+                class="form-control" 
+                placeholder="Имя пользователя" 
+                required 
+              />
             </div>
             <div class="mb-2">
               <label for="password" class="form-label">Пароль</label>
-              <input type="password" id="password" v-model="form.password" class="form-control" required />
+              <input 
+                type="password" 
+                id="password" 
+                v-model="form.password" 
+                class="form-control" 
+                placeholder="Пароль" 
+                required 
+              />
             </div>
-            <input type="hidden" v-model="form.next">
-            <button type="submit" class="btn btn-login w-100">Войти</button>
+            <input type="hidden" v-model="form.next" />
+            
+            <div class="d-flex justify-content-start">
+              <button type="submit" class="btn btn-login btn-sm">Войти</button>
+            </div>
+            
+            <div class="mt-2 text-left">
+              <router-link to="/password-reset" class="text-decoration-none">Забыли пароль?</router-link>
+            </div>
           </form>
-          <div class="text-center mt-3">
-            <router-link to="/password-reset">Забыли пароль?</router-link>
-          </div>
         </div>
       </div>
     </div>
@@ -45,7 +63,7 @@ export default {
       form: {
         username: '',
         password: '',
-        next: this.$route.query.next || '', // Передача "next" из URL
+        next: this.$route.query.next || '',
       },
       errorMessage: '',
     };
@@ -54,13 +72,17 @@ export default {
     async login() {
       try {
         const response = await axios.post('/api/auth/login/', this.form, { withCredentials: true });
+        
         if (response.data.success) {
+          localStorage.setItem('authToken', response.data.token);
+          localStorage.setItem('username', this.form.username);
+          
           this.$router.push(this.form.next || '/');
         } else {
           this.errorMessage = 'Неправильные учетные данные';
         }
       } catch (error) {
-        this.errorMessage = 'Ошибка входа. Проверьте логин и пароль.';
+        this.errorMessage = 'Ошибка входа. Проверьте имя пользователя и пароль.';
       }
     },
   },
@@ -68,11 +90,24 @@ export default {
 </script>
 
 <style scoped>
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.form-container {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+  align-items: flex-start;
+  padding-top: 30px;
+}
+
 .card {
-  margin-top: 0.5rem;
   width: 100%;
   max-width: 40rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 20px;
 }
 
 .card-header {
@@ -128,7 +163,22 @@ export default {
   align-items: center;
 }
 
-.vh-100 {
-  height: 100vh;
+.text-left {
+  text-align: left;
+  font-size: 0.8rem;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.btn-sm {
+  font-size: 0.8rem;
+  padding: 0.4rem 1rem;
+  width: auto;
+}
+
+footer {
+  margin-top: auto;
 }
 </style>
