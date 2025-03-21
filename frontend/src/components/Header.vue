@@ -2,10 +2,10 @@
   <header>
     <nav class="navbar navbar-light">
       <div class="container">
-        <a class="navbar-brand" href="/">
+        <router-link class="navbar-brand" to="/">
           <img src="@/assets/logotip.png" width="45" height="45" alt="Логотип" class="logo">
           <span class="brand-name">Bloghub</span>
-        </a>
+        </router-link>
         <ul class="nav nav-pills">
           <li class="nav-item">
             <router-link class="nav-link" to="/about">О проекте</router-link>
@@ -43,16 +43,19 @@
 <script>
 export default {
   name: "HeaderComponent",
-  data() {
-    return {
-      isAuthenticated: false,
-      username: "Пользователь"
-    };
+  computed: {
+    isAuthenticated() {
+      return !!localStorage.getItem("authToken");
+    },
+    username() {
+      return localStorage.getItem("username") || "Пользователь";
+    }
   },
   methods: {
     logout() {
-      this.isAuthenticated = false;
-      alert("Вы вышли из аккаунта");
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("username");
+      this.$router.push("/login");
     }
   }
 };
