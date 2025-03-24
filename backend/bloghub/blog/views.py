@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -6,6 +5,15 @@ from .serializers import RegisterSerializer
 from .serializers import LoginSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
+from django.utils.http import urlsafe_base64_encode
+from .serializers import PasswordResetRequestSerializer, PasswordResetConfirmSerializer
+from django.conf import settings
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
@@ -31,3 +39,40 @@ class ProtectedView(APIView):
 
     def get(self, request):
         return Response({"message": "You are authenticated!"})
+    
+
+
+
+class PasswordResetRequestView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.user
+
+            uid = urlsafe_base64_encode(str(user.pk).encode())
+            token = default_token_generator.make_token(user)
+
+            reset_link = f"{request.scheme}://{request.get_host()}/api/password-reset/confirm/?uidb64={uid}&token={token}"
+
+            email_subject = "Password Reset Request"
+            email_message = render_to_string('password_reset_email.html', {'reset_link': reset_link})
+            send_mail(
+                email_subject,
+                email_message,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+            return Response({"message": "Password reset link has been sent to your email."}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetConfirmView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
