@@ -97,3 +97,20 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.save()
         return user
     
+from blog.models import Category
+from blog.models import Post
+
+from rest_framework import serializers
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'slug']
+
+class PostSerializer(serializers.ModelSerializer):
+    categories = CategorySerializer(many=True, read_only=True)
+    author = serializers.ReadOnlyField(source='author.username')
+
+    class Meta:
+        model = Post
+        fields = ['id', 'title', 'content', 'image', 'video', 'categories', 'author', 'created_at', 'updated_at']
