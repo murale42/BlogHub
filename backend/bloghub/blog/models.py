@@ -25,9 +25,11 @@ class Category(models.Model):
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
 
+from ckeditor.fields import RichTextField
+
 class Post(models.Model):
     title = models.CharField(max_length=255)
-    content = models.TextField(verbose_name='Текст')
+    content = RichTextField(verbose_name='Текст')  # Теперь это поле поддерживает форматирование
     image = models.ImageField(upload_to='post_images/', blank=True, null=True)
     video = models.FileField(upload_to='post_videos/', blank=True, null=True)
     categories = models.ManyToManyField(Category, related_name='posts', verbose_name='Категория')
