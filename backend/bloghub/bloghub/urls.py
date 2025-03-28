@@ -13,6 +13,7 @@ from django.urls import path
 from blog.views import PasswordResetRequestView, PasswordResetConfirmView
 from blog.views import ChangePasswordView
 from blog.views import PostListCreateView, PostDetailView, CategoryDetailView, CategoryListView
+from blog.views import PostsByCategoryView, PostsByAuthorView
 
 
 def home(request):
@@ -31,6 +32,8 @@ urlpatterns = [
     path('api/posts/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
     path('api/categories/', CategoryListView.as_view(), name='category-list'),
     path('api/categories/<int:pk>/', CategoryDetailView.as_view(), name='category-detail'),
+    path('posts/category/<slug:slug>/', PostsByCategoryView.as_view(), name='posts-by-category'),
+    path('posts/author/<str:username>/', PostsByAuthorView.as_view(), name='posts-by-author'),
 ]
 
 # Подключение маршрутов для медиа-файлов

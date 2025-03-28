@@ -116,3 +116,19 @@ class CategoryListView(generics.ListCreateAPIView):
 class CategoryDetailView(generics.RetrieveAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+class PostsByCategoryView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        category_slug = self.kwargs['slug']
+        return Post.objects.filter(categories__slug=category_slug)
+
+class PostsByAuthorView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        author_username = self.kwargs['username']
+        return Post.objects.filter(author__username=author_username)
