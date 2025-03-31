@@ -34,6 +34,7 @@ urlpatterns = [
     path('api/categories/<int:pk>/', CategoryDetailView.as_view(), name='category-detail'),
     path('posts/category/<slug:slug>/', PostsByCategoryView.as_view(), name='posts-by-category'),
     path('posts/author/<str:username>/', PostsByAuthorView.as_view(), name='posts-by-author'),
+    path('api/authors/<str:username>/', AuthorDetailView.as_view(), name='author-detail'),
 ]
 
 # Подключение маршрутов для медиа-файлов

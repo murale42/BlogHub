@@ -109,8 +109,20 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     categories = CategorySerializer(many=True, read_only=True)
-    author = serializers.ReadOnlyField(source='author.username')
+    author = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = ['id', 'title', 'content', 'image', 'video', 'categories', 'author', 'created_at', 'updated_at']
+
+    def get_author(self, obj):
+        return {
+            "username": obj.author.username,
+            "profile_url": f"/api/authors/{obj.author.username}/"
+        }
+
+User = get_user_model()
+class AuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'email']

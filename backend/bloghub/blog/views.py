@@ -15,6 +15,9 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from .serializers import ChangePasswordSerializer
+from rest_framework.generics import RetrieveAPIView
+from django.contrib.auth import get_user_model
+from .serializers import AuthorSerializer
 
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
@@ -132,3 +135,12 @@ class PostsByAuthorView(generics.ListAPIView):
     def get_queryset(self):
         author_username = self.kwargs['username']
         return Post.objects.filter(author__username=author_username)
+
+
+
+User = get_user_model()
+
+class AuthorDetailView(RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = AuthorSerializer
+    lookup_field = "username"
