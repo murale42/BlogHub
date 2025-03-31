@@ -13,7 +13,7 @@ from django.urls import path
 from blog.views import PasswordResetRequestView, PasswordResetConfirmView
 from blog.views import ChangePasswordView
 from blog.views import PostListCreateView, PostDetailView, CategoryDetailView, CategoryListView
-from blog.views import PostsByCategoryView, PostsByAuthorView
+from blog.views import PostsByCategoryView, PostsByAuthorView, AuthorDetailView
 
 
 def home(request):
