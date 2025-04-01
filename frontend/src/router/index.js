@@ -8,6 +8,7 @@ import PasswordResetForm from "../components/PasswordResetForm.vue";
 import PasswordResetDone from "../components/PasswordResetDone.vue";
 import LogoutPage from '../components/LogoutPage.vue';
 import PostCardPage from '../components/PostCardPage.vue';
+import CreatePost from '../components/CreatePost.vue';
 
 const routes = [
   { path: '/', name: 'HomePage', component: HomePage },
@@ -19,6 +20,7 @@ const routes = [
   { path: "/password-reset-done", name: "PasswordResetDone", component: PasswordResetDone },
   { path: '/logout', component: LogoutPage },
   { path: '/postcard', component: PostCardPage },
+  { path: '/create-post', component: CreatePost },
 ];
 
 const router = createRouter({
