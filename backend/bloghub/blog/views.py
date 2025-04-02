@@ -18,6 +18,7 @@ from .serializers import ChangePasswordSerializer
 from rest_framework.generics import RetrieveAPIView
 from django.contrib.auth import get_user_model
 from .serializers import AuthorSerializer
+from blog.permissions import IsAuthorOrReadOnly
 
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
@@ -136,7 +137,10 @@ class PostsByAuthorView(generics.ListAPIView):
         author_username = self.kwargs['username']
         return Post.objects.filter(author__username=author_username)
 
-
+class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthorOrReadOnly]
 
 User = get_user_model()
 
@@ -144,3 +148,5 @@ class AuthorDetailView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = AuthorSerializer
     lookup_field = "username"
+
+
