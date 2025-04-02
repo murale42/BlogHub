@@ -1,56 +1,55 @@
-// index.js
-import { createApp } from 'vue';
-import PostForm from './PostForm.vue';
-
-const app = createApp(PostForm);
-app.mount('#app');
-
-// PostForm.vue
 <template>
-  <div class="col d-flex justify-content-center">
-    <div class="card" style="width: 40rem;">
-      <div class="card-header">
-        {{ pageTitle }}
-      </div>
-      <div class="card-body">
-        <form @submit.prevent="handleSubmit" enctype="multipart/form-data">
-          <div v-if="!isDelete">
-            <div class="form-check mb-2">
-              <input type="checkbox" v-model="form.is_published" class="form-check-input" id="publishCheckbox" />
-              <label class="form-check-label" for="publishCheckbox">Опубликовать</label>
+  <div>
+    <HeaderComponent />
+    <div class="d-flex justify-content-center">
+      <div class="card">
+        <div class="card-header">
+          {{ pageTitle }}
+        </div>
+        <div class="card-body">
+          <form @submit.prevent="handleSubmit" enctype="multipart/form-data">
+            <div v-if="!isDelete">
+              <label class="form-label">Заголовок</label>
+              <input type="text" v-model="form.title" class="form-control mb-2" />
+              <label class="form-label">Текст</label>
+              <textarea v-model="form.text" class="form-control mb-2"></textarea>
+              <label class="form-label">Дата и время публикации</label>
+              <input type="datetime-local" v-model="form.pub_date" class="form-control mb-2" />
+              <label class="form-label">Категория</label>
+              <select v-model="form.category" class="form-select mb-2">
+                <option value="Новости">Новости</option>
+                <option value="Спорт">Спорт</option>
+                <option value="Культура">Культура</option>
+              </select>
+              <label class="form-label">Фото</label>
+              <input type="file" @change="handleFileUpload" class="form-control mb-2" />
             </div>
-            <input type="text" v-model="form.title" placeholder="Заголовок" class="form-control mb-2" />
-            <textarea v-model="form.text" placeholder="Текст" class="form-control mb-2"></textarea>
-            <label class="form-label">Дата и время публикации</label>
-            <input type="datetime-local" v-model="form.pub_date" class="form-control mb-2" />
-            <label class="form-label">Местоположение</label>
-            <input type="text" v-model="form.location.name" placeholder="Местоположение" class="form-control mb-2" />
-            <label class="form-label">Категория</label>
-            <select v-model="form.category" class="form-select mb-2">
-              <option value="Новости">Новости</option>
-              <option value="Спорт">Спорт</option>
-              <option value="Культура">Культура</option>
-            </select>
-            <label class="form-label">Фото</label>
-            <input type="file" @change="handleFileUpload" class="form-control mb-2" />
-          </div>
-          <div v-else>
-            <article>
-              <img v-if="form.image" :src="form.image" class="border-3 rounded img-fluid img-thumbnail mb-2" />
-              <p>{{ formattedDate }} | {{ locationName }} | {{ form.category }}</p>
-              <h3>{{ form.title }}</h3>
-              <p>{{ form.text }}</p>
-            </article>
-          </div>
-          <button type="submit" class="btn btn-primary">Отправить</button>
-        </form>
+            <div v-else>
+              <article>
+                <img v-if="form.image" :src="form.image" class="border-3 rounded img-fluid img-thumbnail mb-2" />
+                <p>{{ formattedDate }} | {{ locationName }} | {{ form.category }}</p>
+                <h3>{{ form.title }}</h3>
+                <p>{{ form.text }}</p>
+              </article>
+            </div>
+            <button type="submit" class="btn btn-create">Отправить</button>
+          </form>
+        </div>
       </div>
     </div>
+    <FooterComponent />
   </div>
 </template>
 
 <script>
+import HeaderComponent from "./Header.vue";
+import FooterComponent from "./Footer.vue";
+
 export default {
+  components: {
+    HeaderComponent,
+    FooterComponent,
+  },
   data() {
     return {
       form: {
@@ -98,8 +97,57 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .card {
-  margin-top: 20px;
+  margin-top: 0.5rem; 
+  width: 100%;
+  max-width: 40rem; 
+  margin-bottom: 0.5rem;
+}
+
+.card-header {
+  font-size: 1rem; 
+  font-weight: 600;
+  padding: 0.75rem;
+}
+
+.card-body {
+  padding: 0.75rem; 
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem; 
+}
+
+.form-control {
+  border-radius: 0.25rem;
+  border-color: #ddd;
+  font-size: 0.8rem; 
+  padding: 0.25rem 0.5rem; 
+  height: 1.8rem; 
+}
+
+.btn-create {
+  background-color: #A025DD;
+  border-color: #A025DD;
+  color: #fff;
+  font-size: 0.8rem; 
+  padding: 0.3rem 0.8rem; 
+}
+
+.btn-create:hover {
+  background-color: #702197;
+  border-color: #702197;
+  color: #fff;
+}
+
+.form-label {
+  font-weight: 500;
+  font-size: 0.8rem; 
+}
+
+.text-muted {
+  font-size: 0.8rem;
+  color: #888;
 }
 </style>
