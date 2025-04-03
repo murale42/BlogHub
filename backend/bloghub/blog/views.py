@@ -1,24 +1,19 @@
-from rest_framework import status
+from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import RegisterSerializer
-from .serializers import LoginSerializer
+from .serializers import RegisterSerializer, LoginSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer, ChangePasswordSerializer, AuthorSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django.utils.http import urlsafe_base64_encode
-from .serializers import PasswordResetRequestSerializer, PasswordResetConfirmSerializer
 from django.conf import settings
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from .serializers import ChangePasswordSerializer
 from rest_framework.generics import RetrieveAPIView
 from django.contrib.auth import get_user_model
-from .serializers import AuthorSerializer
 from blog.permissions import IsAuthorOrReadOnly
+from blog.models import Post, Category
+from blog.serializers import PostSerializer, CategorySerializer
 
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
@@ -44,9 +39,6 @@ class ProtectedView(APIView):
 
     def get(self, request):
         return Response({"message": "You are authenticated!"})
-    
-
-
 
 class PasswordResetRequestView(APIView):
     def post(self, request, *args, **kwargs):
@@ -90,14 +82,6 @@ class ChangePasswordView(APIView):
             serializer.save()
             return Response({"message": "Password updated successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-from rest_framework import generics, permissions
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from blog.models import Post
-from blog.serializers import PostSerializer
-from blog.models import Category
-from blog.serializers import CategorySerializer
 
 class PostListCreateView(generics.ListCreateAPIView):
     queryset = Post.objects.all()

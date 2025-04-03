@@ -1,12 +1,10 @@
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
-
+from ckeditor.fields import RichTextField
+from django.contrib.auth import get_user_model
 class CustomUser(AbstractUser):
     groups = models.ManyToManyField(Group, related_name="customuser_groups")
     user_permissions = models.ManyToManyField(Permission, related_name="customuser_permissions")
-
-from django.db import models
-from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
@@ -25,11 +23,9 @@ class Category(models.Model):
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
 
-from ckeditor.fields import RichTextField
-
 class Post(models.Model):
     title = models.CharField(max_length=255)
-    content = RichTextField(verbose_name='Текст')  # Теперь это поле поддерживает форматирование
+    content = RichTextField(verbose_name='Текст')  
     image = models.ImageField(upload_to='post_images/', blank=True, null=True)
     video = models.FileField(upload_to='post_videos/', blank=True, null=True)
     categories = models.ManyToManyField(Category, related_name='posts', verbose_name='Категория')
