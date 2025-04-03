@@ -1,20 +1,11 @@
-from blog.forms import UserCreateForm
 from django.conf import settings
 from django.conf.urls.static import static
-
-from blog.views import RegisterView
+from blog.views import RegisterView, PasswordResetRequestView, PasswordResetConfirmView, ChangePasswordView
 from django.contrib import admin
 from django.urls import path
 from django.http import HttpResponse
 from rest_framework.authtoken.views import obtain_auth_token
-from blog.views import RegisterView, LoginView
-from blog.views import ProtectedView
-from django.urls import path
-from blog.views import PasswordResetRequestView, PasswordResetConfirmView
-from blog.views import ChangePasswordView
-from blog.views import PostListCreateView, PostDetailView, CategoryDetailView, CategoryListView
-from blog.views import PostsByCategoryView, PostsByAuthorView, AuthorDetailView
-
+from blog.views import RegisterView, LoginView, ProtectedView, PostListCreateView, PostDetailView, CategoryDetailView, CategoryListView, PostsByCategoryView, PostsByAuthorView, AuthorDetailView
 
 def home(request):
     return HttpResponse("Добро пожаловать в BlogHub!")

@@ -5,5 +5,5 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True     
-        # Разрешаем изменение и удаление только автору поста
+        # Разрешает изменение и удаление только автору поста
         return obj.author == request.user

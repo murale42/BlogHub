@@ -1,11 +1,11 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ValidationError
-from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
-from django.contrib.auth.models import User
+from blog.models import Category, Post
+from rest_framework import serializers
 
 class RegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True)
@@ -38,8 +38,7 @@ class LoginSerializer(serializers.Serializer):
         if not user:
             raise serializers.ValidationError('Invalid credentials')
         return user
-    
-    
+       
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
@@ -49,7 +48,6 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         except get_user_model().DoesNotExist:
             raise ValidationError("No user is associated with this email.")
         return value
-
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
@@ -97,11 +95,6 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.save()
         return user
     
-from blog.models import Category
-from blog.models import Post
-
-from rest_framework import serializers
-
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
