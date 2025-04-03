@@ -1,4 +1,4 @@
-<template>
+<template> 
   <div>
     <HeaderComponent />
     <div class="d-flex justify-content-center">
@@ -16,9 +16,12 @@
                 :id="key" 
                 class="form-control"
                 required
+                :maxlength="field.maxLength"
+                :placeholder="field.placeholder"
               />
+              <div v-if="field.hint" class="form-hint" v-html="field.hint"></div>
             </div>
-            <button type="submit" class="btn btn-create">Создать</button>
+            <button type="submit" class="btn btn-create">Зарегистрироваться</button>
           </form>
         </div>
       </div>
@@ -40,12 +43,39 @@ export default {
   data() {
     return {
       form: {
-        username: { label: "Имя пользователя", value: "", type: "text" },
-        email: { label: "Email", value: "", type: "email" },
-        first_name: { label: "Имя", value: "", type: "text" },
-        last_name: { label: "Фамилия", value: "", type: "text" },
-        password: { label: "Пароль", value: "", type: "password" },
-        password2: { label: "Повторите пароль", value: "", type: "password" }
+        username: {
+          label: "Имя пользователя", 
+          value: "", 
+          type: "text", 
+          required: true,
+          maxLength: 30,
+          placeholder: "Имя пользователя*",
+          hint: `*Обязательное поле.<br>Не более 30 символов.<br>Только буквы, цифры и символы @/./+/-/_.`
+        },
+        first_name: { label: "Имя", value: "", type: "text", required: true, placeholder: "Имя" },
+        last_name: { label: "Фамилия", value: "", type: "text", required: true, placeholder: "Фамилия" },
+        email: { label: "Адрес электронной почты", value: "", type: "email", required: true, placeholder: "Адрес электронной почты" },
+        password: {
+          label: "Пароль", 
+          value: "", 
+          type: "password", 
+          required: true,
+          placeholder: "Пароль",
+          hint: `<ul class='password-hint'>
+                   <li class="spisok">Пароль не должен быть слишком похож на другую вашу личную информацию.</li>
+                   <li class="spisok">Ваш пароль должен содержать как минимум 8 символов.</li>
+                   <li class="spisok">Пароль не должен быть слишком простым и распространенным.</li>
+                   <li class="spisok">Пароль не может состоять только из цифр.</li>
+                 </ul>`
+        },
+        password2: {
+          label: "Подтверждение пароля", 
+          value: "", 
+          type: "password", 
+          required: true,
+          placeholder: "Подтверждение пароля",
+          hint: "Для подтверждения введите, пожалуйста, пароль еще раз."
+        }
       }
     };
   },
@@ -96,6 +126,11 @@ export default {
   height: 1.8rem; 
 }
 
+.spisok {
+  margin-bottom: 0.15rem; /* Меньший отступ между пунктами */
+  font-size: 0.75rem; /* Меньший размер шрифта */
+}
+
 .btn-create {
   background-color: #A025DD;
   border-color: #A025DD;
@@ -113,6 +148,39 @@ export default {
 .form-label {
   font-weight: 500;
   font-size: 0.8rem; 
+  text-transform: uppercase; /* Сделано для заглавных букв */
+}
+
+.card-header {
+  text-transform: none; /* Без заглавных букв для заголовка карточки */
+}
+
+.btn-create {
+  text-transform: none; /* Без заглавных букв для кнопки */
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+  white-space: pre-line;
+  line-height: 1.4; /* Уменьшенный интервал для первой группы */
+}
+
+.password-hint {
+  padding-left: 0.75rem;
+  margin: 0;
+  list-style-type: disc;
+  line-height: 1.4; /* Уменьшенный интервал между строками */
+}
+
+.password-hint li {
+  margin-bottom: 0.15rem; /* Меньший отступ между пунктами */
+  font-size: 0.75rem; /* Уменьшенный размер шрифта для всех элементов списка */
+}
+
+.text-danger {
+  color: red;
 }
 
 .d-flex {
