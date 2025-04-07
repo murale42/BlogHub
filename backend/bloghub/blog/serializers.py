@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
-from blog.models import Category, Post
+from blog.models import Category, Post, Comment
 from rest_framework import serializers
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -119,3 +119,11 @@ class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'email']
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'post', 'author', 'content', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'author', 'created_at', 'updated_at']
