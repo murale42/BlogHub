@@ -11,9 +11,9 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from rest_framework.generics import RetrieveAPIView
 from django.contrib.auth import get_user_model
-from blog.permissions import IsAuthorOrReadOnly
-from blog.models import Post, Category
-from blog.serializers import PostSerializer, CategorySerializer
+from blog.permissions import IsAuthorOrReadOnly, IsCommentAuthorOrReadOnly
+from blog.models import Post, Category, Comment
+from blog.serializers import PostSerializer, CategorySerializer, CommentSerializer
 
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
@@ -133,4 +133,19 @@ class AuthorDetailView(RetrieveAPIView):
     serializer_class = AuthorSerializer
     lookup_field = "username"
 
+class CommentListCreateView(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def get_queryset(self):
+        post_id = self.kwargs.get('post_id')
+        return Comment.objects.filter(post_id=post_id).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        post_id = self.kwargs.get('post_id')
+        serializer.save(author=self.request.user, post_id=post_id)
+
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsCommentAuthorOrReadOnly]
