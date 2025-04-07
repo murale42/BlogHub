@@ -36,8 +36,8 @@ export default {
   },
   data() {
     return {
-      userAuthenticated: true, // пока фиктивно
-      currentUser: "eliza", // заменишь позже на из auth
+      userAuthenticated: true, 
+      currentUser: "eliza", 
       newComment: "",
       comments: [
         {

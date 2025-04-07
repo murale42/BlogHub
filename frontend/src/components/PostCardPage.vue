@@ -18,14 +18,13 @@
         <a href="#" class="card-link text-muted">Комментарии (5)</a>
       </div>
 
-      <!-- Добавим сюда комментарии -->
       <Comments :post-id="123" />
     </div>
   </div>
 </template>
 
 <script>
-import Comments from './PostComments.vue'; // путь поправь под себя
+import Comments from './PostComments.vue'; 
 
 export default {
   name: 'PostCard',
