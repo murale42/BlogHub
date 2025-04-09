@@ -6,6 +6,7 @@ from django.urls import path
 from django.http import HttpResponse
 from rest_framework.authtoken.views import obtain_auth_token
 from blog.views import RegisterView, LoginView, ProtectedView, PostListCreateView, PostDetailView, CategoryDetailView, CategoryListView, PostsByCategoryView, PostsByAuthorView, AuthorDetailView, CommentListCreateView, CommentDetailView
+from blog.views import LikePostView, UnlikePostView
 
 def home(request):
     return HttpResponse("Добро пожаловать в BlogHub!")
@@ -28,6 +29,8 @@ urlpatterns = [
     path('api/authors/<str:username>/', AuthorDetailView.as_view(), name='author-detail'),
     path('api/posts/<int:post_id>/comments/', CommentListCreateView.as_view(), name='comment-list-create'),
     path('api/comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
+    path('api/posts/<int:post_id>/like/', LikePostView.as_view(), name='like-post'),
+    path('api/posts/<int:post_id>/unlike/', UnlikePostView.as_view(), name='unlike-post'),
 ]
 
 # Подключение маршрутов для медиа-файлов
