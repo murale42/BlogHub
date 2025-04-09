@@ -34,10 +34,12 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
     def validate(self, data):
+        print("Login attempt:", data)
         user = authenticate(username=data['username'], password=data['password'])
         if not user:
             raise serializers.ValidationError('Invalid credentials')
-        return user
+        print("Authenticated user:", user)
+        return {'user': user}
        
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
