@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
-from blog.models import Category, Post, Comment
+from blog.models import Category, Post, Comment, Like
 from rest_framework import serializers
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -105,16 +105,20 @@ class CategorySerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     categories = CategorySerializer(many=True, read_only=True)
     author = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'image', 'video', 'categories', 'author', 'created_at', 'updated_at']
+        fields = ['id', 'title', 'content', 'image', 'video', 'categories', 'author', 'created_at', 'updated_at', 'like_count']
 
     def get_author(self, obj):
         return {
             "username": obj.author.username,
             "profile_url": f"/api/authors/{obj.author.username}/"
         }
+
+    def get_like_count(self, obj):
+        return obj.likes.count()
 
 User = get_user_model()
 class AuthorSerializer(serializers.ModelSerializer):
@@ -129,3 +133,9 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['id', 'post', 'author', 'content', 'created_at', 'updated_at']
         read_only_fields = ['id', 'author', 'created_at', 'updated_at']
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ['id', 'user', 'post', 'created_at']
+        read_only_fields = ['id', 'user', 'created_at']

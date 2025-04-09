@@ -12,7 +12,7 @@ from django.template.loader import render_to_string
 from rest_framework.generics import RetrieveAPIView
 from django.contrib.auth import get_user_model
 from blog.permissions import IsAuthorOrReadOnly, IsCommentAuthorOrReadOnly
-from blog.models import Post, Category, Comment
+from blog.models import Post, Category, Comment, Like
 from blog.serializers import PostSerializer, CategorySerializer, CommentSerializer
 
 class RegisterView(APIView):
@@ -149,3 +149,24 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsCommentAuthorOrReadOnly]
+
+class LikePostView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id):
+        post = Post.objects.get(id=post_id)
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
+        if created:
+            return Response({"message": "Post liked."}, status=status.HTTP_201_CREATED)
+        return Response({"message": "Already liked."}, status=status.HTTP_200_OK)
+
+class UnlikePostView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, post_id):
+        try:
+            like = Like.objects.get(user=request.user, post_id=post_id)
+            like.delete()
+            return Response({"message": "Like removed."}, status=status.HTTP_204_NO_CONTENT)
+        except Like.DoesNotExist:
+            return Response({"message": "You have not liked this post."}, status=status.HTTP_400_BAD_REQUEST)
