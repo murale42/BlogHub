@@ -70,21 +70,22 @@ export default {
   },
   methods: {
     async login() {
-      try {
-        const response = await axios.post('/api/auth/login/', this.form, { withCredentials: true });
-        
-        if (response.data.success) {
-          localStorage.setItem('authToken', response.data.token);
-          localStorage.setItem('username', this.form.username);
-          
-          this.$router.push(this.form.next || '/');
-        } else {
-          this.errorMessage = 'Неправильные учетные данные';
-        }
-      } catch (error) {
-        this.errorMessage = 'Ошибка входа. Проверьте имя пользователя и пароль.';
-      }
-    },
+  try {
+    const response = await axios.post('http://127.0.0.1:8000/api/token-auth/', this.form, { withCredentials: true });
+    
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('username', this.form.username);
+      
+      this.$router.push(this.form.next || '/');
+    } else {
+      this.errorMessage = 'Неправильные учетные данные';
+    }
+  } catch (error) {
+    this.errorMessage = 'Ошибка входа. Проверьте имя пользователя и пароль.';
+  }
+}
+
   },
 };
 </script>

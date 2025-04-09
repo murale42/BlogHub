@@ -2,10 +2,16 @@
   <div class="p-3">
     <h5 class="mb-3">Комментарии</h5>
 
+    <!-- Форма добавления комментария -->
     <div v-if="userAuthenticated">
       <form @submit.prevent="submitComment">
         <div class="mb-2">
-          <textarea v-model="newComment" class="form-control" rows="3" placeholder="Оставьте комментарий..."></textarea>
+          <textarea
+            v-model="newComment"
+            class="form-control"
+            rows="3"
+            placeholder="Оставьте комментарий..."
+          ></textarea>
         </div>
         <button type="submit" class="btn btn-primary btn-sm">Отправить</button>
       </form>
@@ -14,59 +20,116 @@
 
     <hr />
 
-    <div v-for="comment in comments" :key="comment.id" class="mb-3">
-      <h6>
-        <a :href="'/profile/' + comment.author">@{{ comment.author }}</a>
-        <small class="text-muted ms-2">{{ comment.date }}</small>
-      </h6>
-      <p>{{ comment.text }}</p>
-      <div v-if="comment.author === currentUser" class="text-muted small">
-        <a href="#" class="me-2">Редактировать</a>
-        <a href="#">Удалить</a>
+    <!-- Список комментариев -->
+    <div v-if="comments.length">
+      <div
+        v-for="comment in comments"
+        :key="comment.id"
+        class="mb-3"
+      >
+        <h6>
+          <a :href="'/profile/' + comment.author">@{{ comment.author }}</a>
+          <small class="text-muted ms-2">{{ comment.date }}</small>
+        </h6>
+        <p>{{ comment.text }}</p>
+
+        <div
+          v-if="comment.author === currentUser"
+          class="text-muted small"
+        >
+          <a href="#" class="me-2">Редактировать</a>
+          <a href="#">Удалить</a>
+        </div>
+        <hr />
       </div>
-      <hr />
     </div>
+    <div v-else class="text-muted">Комментариев пока нет.</div>
   </div>
 </template>
 
 <script>
 export default {
   props: {
-    postId: Number
+    postId: {
+      type: Number,
+      required: true
+    }
   },
   data() {
     return {
-      userAuthenticated: true, 
-      currentUser: "eliza", 
+      userAuthenticated: false,
+      currentUser: null,
       newComment: "",
-      comments: [
-        {
-          id: 1,
-          author: "eliza",
-          date: "7 апреля 2025",
-          text: "Очень интересный пост!"
-        },
-        {
-          id: 2,
-          author: "alex",
-          date: "6 апреля 2025",
-          text: "Спасибо за информацию!"
-        }
-      ]
+      comments: []
     };
   },
+  mounted() {
+    this.checkAuth();
+    this.fetchComments();
+  },
   methods: {
-    submitComment() {
+    // Проверка авторизации и текущего пользователя
+    checkAuth() {
+      const token = localStorage.getItem("authToken");
+      const username = localStorage.getItem("username"); // предполагаем, что ты его сохраняешь после логина
+
+      if (token && username) {
+        this.userAuthenticated = true;
+        this.currentUser = username;
+      }
+    },
+
+    // Загрузка комментариев из API
+    async fetchComments() {
+      try {
+        const response = await fetch(`/api/posts/${this.postId}/comments/`);
+        if (!response.ok) throw new Error("Ошибка при загрузке комментариев");
+
+        const data = await response.json();
+        this.comments = data.map(comment => ({
+          id: comment.id,
+          author: comment.author,
+          text: comment.content,
+          date: new Date(comment.created_at).toLocaleDateString("ru-RU")
+        }));
+      } catch (error) {
+        console.error("Ошибка загрузки комментариев:", error);
+      }
+    },
+
+    // Отправка нового комментария
+    async submitComment() {
       if (this.newComment.trim() === "") return;
 
-      this.comments.unshift({
-        id: Date.now(),
-        author: this.currentUser,
-        date: new Date().toLocaleDateString("ru-RU"),
-        text: this.newComment
-      });
+      try {
+        const token = localStorage.getItem("authToken");
 
-      this.newComment = "";
+        const response = await fetch(`/api/posts/${this.postId}/comments/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`
+          },
+          body: JSON.stringify({
+            content: this.newComment
+          })
+        });
+
+        if (!response.ok) throw new Error("Ошибка при отправке комментария");
+
+        const createdComment = await response.json();
+
+        this.comments.unshift({
+          id: createdComment.id,
+          author: createdComment.author,
+          text: createdComment.content,
+          date: new Date(createdComment.created_at).toLocaleDateString("ru-RU")
+        });
+
+        this.newComment = "";
+      } catch (error) {
+        console.error("Ошибка при добавлении комментария:", error);
+      }
     }
   }
 };
