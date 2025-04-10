@@ -170,3 +170,26 @@ class UnlikePostView(APIView):
             return Response({"message": "Like removed."}, status=status.HTTP_204_NO_CONTENT)
         except Like.DoesNotExist:
             return Response({"message": "You have not liked this post."}, status=status.HTTP_400_BAD_REQUEST)
+        
+class RepostView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id):
+        try:
+            original_post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return Response({"message": "Original post not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        repost = Post.objects.create(
+            title=f"Repost: {original_post.title}",
+            content=original_post.content,
+            image=original_post.image,
+            video=original_post.video,
+            author=request.user,
+            repost_from=original_post
+        )
+        repost.categories.set(original_post.categories.all())
+        repost.save()
+
+        serializer = PostSerializer(repost, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
