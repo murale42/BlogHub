@@ -11,27 +11,42 @@
             <div v-if="!isDelete">
               <label class="form-label">Заголовок</label>
               <input type="text" v-model="form.title" class="form-control mb-2" />
+
               <label class="form-label">Текст</label>
               <textarea v-model="form.text" class="form-control mb-2"></textarea>
+
               <label class="form-label">Дата и время публикации</label>
               <input type="datetime-local" v-model="form.pub_date" class="form-control mb-2" />
+
               <label class="form-label">Категория</label>
               <select v-model="form.category" class="form-select mb-2">
-                <option value="Новости">Новости</option>
-                <option value="Спорт">Спорт</option>
-                <option value="Культура">Культура</option>
+                <option value="1">Новости</option>
+                <option value="2">Спорт</option>
+                <option value="3">Культура</option>
               </select>
+
               <label class="form-label">Фото</label>
-              <input type="file" @change="handleFileUpload" class="form-control mb-2" />
+              <input
+                type="file"
+                @change="handleFileUpload"
+                class="form-control mb-2"
+                ref="imageInput"
+              />
             </div>
+
             <div v-else>
               <article>
-                <img v-if="form.image" :src="form.image" class="border-3 rounded img-fluid img-thumbnail mb-2" />
+                <img
+                  v-if="form.image"
+                  :src="form.image"
+                  class="border-3 rounded img-fluid img-thumbnail mb-2"
+                />
                 <p>{{ formattedDate }} | {{ locationName }} | {{ form.category }}</p>
                 <h3>{{ form.title }}</h3>
                 <p>{{ form.text }}</p>
               </article>
             </div>
+
             <button type="submit" class="btn btn-create">Отправить</button>
           </form>
         </div>
@@ -42,8 +57,9 @@
 </template>
 
 <script>
-import HeaderComponent from "./Header.vue";
-import FooterComponent from "./Footer.vue";
+import axios from 'axios';
+import HeaderComponent from './Header.vue';
+import FooterComponent from './Footer.vue';
 
 export default {
   components: {
@@ -57,9 +73,8 @@ export default {
         text: '',
         image: null,
         pub_date: new Date().toISOString().slice(0, 16),
+        category: [],  // Категория теперь будет массивом ID
         location: { name: 'Планета Земля', is_published: true },
-        category: '',
-        is_published: false
       },
       isDelete: window.location.pathname.includes('/delete/'),
     };
@@ -80,59 +95,96 @@ export default {
       });
     },
     locationName() {
-      return this.form.location && this.form.location.is_published ? this.form.location.name : 'Планета Земля';
+      return this.form.location && this.form.location.is_published
+        ? this.form.location.name
+        : 'Планета Земля';
     },
   },
   methods: {
     handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        this.form.image = URL.createObjectURL(file);
+      this.form.image = event.target.files[0];
+    },
+    async handleSubmit() {
+      const formData = new FormData();
+      formData.append('title', this.form.title);
+      formData.append('content', this.form.text);  // Используем 'content' для текста поста, согласно модели
+      formData.append('pub_date', this.form.pub_date);
+      formData.append('categories', this.form.category);  // Отправляем категорию как массив ID
+
+      if (this.form.image) {
+        formData.append('image', this.form.image);
       }
-    },
-    handleSubmit() {
-      console.log('Форма отправлена', this.form);
-    },
+
+      // Получаем токен из localStorage
+      const token = localStorage.getItem('authToken');  // Используем 'authToken' вместо 'token'
+
+      if (!token) {
+        console.error('Токен не найден!');
+        alert('Ошибка: не найден токен! Пожалуйста, авторизуйтесь снова.');
+        return; // Прерываем выполнение, если токен отсутствует
+      }
+
+      try {
+        // Добавляем токен в заголовок запроса
+        await axios.post('http://localhost:8000/api/posts/', formData, {
+          headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'multipart/form-data',  // Убедитесь, что заголовок для формата данных правильный
+          },
+        });
+
+        // После успешного создания редиректим на главную страницу
+        this.$router.push('/');
+        this.$root.$emit('fetch-posts');  // Сигнал для обновления ленты
+
+      } catch (error) {
+        // Обработка ошибок
+        console.error('Ошибка при отправке поста:', error);
+        if (error.response && error.response.status === 401) {
+          console.error('Неверный токен или отсутствует авторизация');
+        }
+      }
+    }
   },
 };
 </script>
 
 <style scoped>
 .card {
-  margin-top: 0.5rem; 
+  margin-top: 0.5rem;
   width: 100%;
-  max-width: 40rem; 
+  max-width: 40rem;
   margin-bottom: 0.5rem;
 }
 
 .card-header {
-  font-size: 1rem; 
+  font-size: 1rem;
   font-weight: 600;
   padding: 0.75rem;
 }
 
 .card-body {
-  padding: 0.75rem; 
+  padding: 0.75rem;
 }
 
 .mb-2 {
-  margin-bottom: 0.5rem; 
+  margin-bottom: 0.5rem;
 }
 
 .form-control {
   border-radius: 0.25rem;
   border-color: #ddd;
-  font-size: 0.8rem; 
-  padding: 0.25rem 0.5rem; 
-  height: 1.8rem; 
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  height: 1.8rem;
 }
 
 .btn-create {
-  background-color: #A025DD;
-  border-color: #A025DD;
+  background-color: #a025dd;
+  border-color: #a025dd;
   color: #fff;
-  font-size: 0.8rem; 
-  padding: 0.3rem 0.8rem; 
+  font-size: 0.8rem;
+  padding: 0.3rem 0.8rem;
 }
 
 .btn-create:hover {
@@ -143,7 +195,7 @@ export default {
 
 .form-label {
   font-weight: 500;
-  font-size: 0.8rem; 
+  font-size: 0.8rem;
 }
 
 .text-muted {
