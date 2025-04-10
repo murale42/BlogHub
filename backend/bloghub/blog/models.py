@@ -32,6 +32,7 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts', verbose_name='Автор публикации')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    repost_from = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='reposts', verbose_name='Репост от')
 
     def __str__(self):
         return self.title
