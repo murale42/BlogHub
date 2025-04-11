@@ -127,8 +127,8 @@ export default {
 }
 
 .spisok {
-  margin-bottom: 0.15rem; /* Меньший отступ между пунктами */
-  font-size: 0.75rem; /* Меньший размер шрифта */
+  margin-bottom: 0.15rem; 
+  font-size: 0.75rem; 
 }
 
 .btn-create {
@@ -148,15 +148,15 @@ export default {
 .form-label {
   font-weight: 500;
   font-size: 0.8rem; 
-  text-transform: uppercase; /* Сделано для заглавных букв */
+  text-transform: uppercase; 
 }
 
 .card-header {
-  text-transform: none; /* Без заглавных букв для заголовка карточки */
+  text-transform: none; 
 }
 
 .btn-create {
-  text-transform: none; /* Без заглавных букв для кнопки */
+  text-transform: none; 
 }
 
 .form-hint {
@@ -164,19 +164,19 @@ export default {
   color: #6c757d;
   margin-top: 0.25rem;
   white-space: pre-line;
-  line-height: 1.4; /* Уменьшенный интервал для первой группы */
+  line-height: 1.4; 
 }
 
 .password-hint {
   padding-left: 0.75rem;
   margin: 0;
   list-style-type: disc;
-  line-height: 1.4; /* Уменьшенный интервал между строками */
+  line-height: 1.4; 
 }
 
 .password-hint li {
-  margin-bottom: 0.15rem; /* Меньший отступ между пунктами */
-  font-size: 0.75rem; /* Уменьшенный размер шрифта для всех элементов списка */
+  margin-bottom: 0.15rem; 
+  font-size: 0.75rem; 
 }
 
 .text-danger {

@@ -9,7 +9,8 @@ import PasswordResetDone from "../components/PasswordResetDone.vue";
 import LogoutPage from '../components/LogoutPage.vue';
 import PostCardPage from '../components/PostCardPage.vue';
 import CreatePost from '../components/CreatePost.vue';
-
+import PostDetail from '../components/PostDetail.vue';
+import PostComments from '../components/PostComments.vue';
 const routes = [
   { path: '/', name: 'HomePage', component: HomePage },
   { path: '/about', name: 'AboutPage', component: AboutPage },
@@ -21,6 +22,8 @@ const routes = [
   { path: '/logout', component: LogoutPage },
   { path: '/postcard', component: PostCardPage },
   { path: '/create-post', component: CreatePost },
+  {path: '/post/:id', name: 'PostDetail', component: PostDetail, props: true},
+  { path: '/post/:id/comments', name: 'PostComments', component: PostComments, props: true },
 ];
 
 const router = createRouter({

@@ -2,7 +2,7 @@
   <div class="p-3">
     <h5 class="mb-3">Комментарии</h5>
 
-    <!-- Форма добавления комментария -->
+   
     <div v-if="userAuthenticated">
       <form @submit.prevent="submitComment">
         <div class="mb-2">
@@ -20,7 +20,7 @@
 
     <hr />
 
-    <!-- Список комментариев -->
+   
     <div v-if="comments.length">
       <div
         v-for="comment in comments"
@@ -68,10 +68,10 @@ export default {
     this.fetchComments();
   },
   methods: {
-    // Проверка авторизации и текущего пользователя
+    
     checkAuth() {
       const token = localStorage.getItem("authToken");
-      const username = localStorage.getItem("username"); // предполагаем, что ты его сохраняешь после логина
+      const username = localStorage.getItem("username"); 
 
       if (token && username) {
         this.userAuthenticated = true;
@@ -79,7 +79,7 @@ export default {
       }
     },
 
-    // Загрузка комментариев из API
+   
     async fetchComments() {
       try {
         const response = await fetch(`/api/posts/${this.postId}/comments/`);
@@ -97,7 +97,7 @@ export default {
       }
     },
 
-    // Отправка нового комментария
+  
     async submitComment() {
       if (this.newComment.trim() === "") return;
 
