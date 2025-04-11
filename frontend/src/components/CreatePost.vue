@@ -20,9 +20,9 @@
 
               <label class="form-label">Категория</label>
               <select v-model="form.category" class="form-select mb-2">
-                <option value="1">Новости</option>
-                <option value="2">Спорт</option>
-                <option value="3">Культура</option>
+                <option v-for="category in categories" :key="category.id" :value="category.id">
+                  {{ category.name }}
+                </option>
               </select>
 
               <label class="form-label">Фото</label>
@@ -73,9 +73,10 @@ export default {
         text: '',
         image: null,
         pub_date: new Date().toISOString().slice(0, 16),
-        category: [],  // Категория теперь будет массивом ID
+        category: [], 
         location: { name: 'Планета Земля', is_published: true },
       },
+      categories: [],  
       isDelete: window.location.pathname.includes('/delete/'),
     };
   },
@@ -100,45 +101,56 @@ export default {
         : 'Планета Земля';
     },
   },
+  mounted() {
+    this.fetchCategories();  
+  },
   methods: {
+    async fetchCategories() {
+      try {
+        const response = await axios.get('http://localhost:8000/api/categories/');
+        this.categories = response.data;  
+      } catch (error) {
+        console.error('Ошибка при загрузке категорий:', error);
+      }
+    },
     handleFileUpload(event) {
       this.form.image = event.target.files[0];
     },
     async handleSubmit() {
       const formData = new FormData();
       formData.append('title', this.form.title);
-      formData.append('content', this.form.text);  // Используем 'content' для текста поста, согласно модели
+      formData.append('content', this.form.text);
       formData.append('pub_date', this.form.pub_date);
-      formData.append('categories', this.form.category);  // Отправляем категорию как массив ID
+      formData.append('categories', this.form.category);  
 
       if (this.form.image) {
         formData.append('image', this.form.image);
       }
 
-      // Получаем токен из localStorage
-      const token = localStorage.getItem('authToken');  // Используем 'authToken' вместо 'token'
+      
+      const token = localStorage.getItem('authToken'); 
 
       if (!token) {
         console.error('Токен не найден!');
         alert('Ошибка: не найден токен! Пожалуйста, авторизуйтесь снова.');
-        return; // Прерываем выполнение, если токен отсутствует
+        return; 
       }
 
       try {
-        // Добавляем токен в заголовок запроса
+        
         await axios.post('http://localhost:8000/api/posts/', formData, {
           headers: {
             'Authorization': `Token ${token}`,
-            'Content-Type': 'multipart/form-data',  // Убедитесь, что заголовок для формата данных правильный
+            'Content-Type': 'multipart/form-data',
           },
         });
 
-        // После успешного создания редиректим на главную страницу
+        
         this.$router.push('/');
-        this.$root.$emit('fetch-posts');  // Сигнал для обновления ленты
+        this.$root.$emit('fetch-posts'); 
 
       } catch (error) {
-        // Обработка ошибок
+       
         console.error('Ошибка при отправке поста:', error);
         if (error.response && error.response.status === 401) {
           console.error('Неверный токен или отсутствует авторизация');
