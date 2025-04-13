@@ -180,6 +180,14 @@ class RepostView(APIView):
         except Post.DoesNotExist:
             return Response({"message": "Original post not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        # Проверка: репостил ли уже этот пользователь
+        existing_repost = Post.objects.filter(author=request.user, repost_from=original_post).first()
+        if existing_repost:
+            return Response(
+                {"message": "You have already reposted this post. Delete it first if you want to repost again."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         repost = Post.objects.create(
             title=f"Repost: {original_post.title}",
             content=original_post.content,

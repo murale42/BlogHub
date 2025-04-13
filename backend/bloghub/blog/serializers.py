@@ -106,10 +106,17 @@ class PostSerializer(serializers.ModelSerializer):
     categories = CategorySerializer(many=True, read_only=True)
     author = serializers.SerializerMethodField()
     like_count = serializers.SerializerMethodField()
-
+    repost_from = serializers.SerializerMethodField()
+    repost_count = serializers.SerializerMethodField()
+    is_repost = serializers.SerializerMethodField()
+    
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'image', 'video', 'categories', 'author', 'created_at', 'updated_at', 'like_count', 'repost_from']
+        fields = [
+            'id', 'title', 'content', 'image', 'video', 'categories', 'author',
+            'created_at', 'updated_at', 'like_count',
+            'repost_from', 'repost_count', 'is_repost'
+        ]
 
     def get_author(self, obj):
         return {
@@ -128,6 +135,12 @@ class PostSerializer(serializers.ModelSerializer):
                 "author": obj.repost_from.author.username
             }
         return None
+    
+    def get_repost_count(self, obj):
+        return obj.reposts.count()
+
+    def get_is_repost(self, obj):
+        return obj.repost_from is not None
 
 User = get_user_model()
 class AuthorSerializer(serializers.ModelSerializer):
