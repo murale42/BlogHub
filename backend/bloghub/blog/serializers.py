@@ -103,7 +103,10 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'slug']
 
 class PostSerializer(serializers.ModelSerializer):
-    categories = CategorySerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(), write_only=True, source='category'
+    )
     author = serializers.SerializerMethodField()
     like_count = serializers.SerializerMethodField()
     repost_from = serializers.SerializerMethodField()
@@ -113,7 +116,8 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = [
-            'id', 'title', 'content', 'image', 'video', 'categories', 'author',
+            'id', 'title', 'content', 'image', 'video',
+            'category', 'category_id', 'author',
             'created_at', 'updated_at', 'like_count',
             'repost_from', 'repost_count', 'is_repost'
         ]
