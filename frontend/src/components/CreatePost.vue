@@ -73,10 +73,10 @@ export default {
         text: '',
         image: null,
         pub_date: new Date().toISOString().slice(0, 16),
-        category: [], 
+        category: null, // Здесь сохраняем только id категории
         location: { name: 'Планета Земля', is_published: true },
       },
-      categories: [],  
+      categories: [],
       isDelete: window.location.pathname.includes('/delete/'),
     };
   },
@@ -102,13 +102,13 @@ export default {
     },
   },
   mounted() {
-    this.fetchCategories();  
+    this.fetchCategories();
   },
   methods: {
     async fetchCategories() {
       try {
         const response = await axios.get('http://localhost:8000/api/categories/');
-        this.categories = response.data;  
+        this.categories = response.data;
       } catch (error) {
         console.error('Ошибка при загрузке категорий:', error);
       }
@@ -121,23 +121,25 @@ export default {
       formData.append('title', this.form.title);
       formData.append('content', this.form.text);
       formData.append('pub_date', this.form.pub_date);
-      formData.append('categories', this.form.category);  
+
+      // Теперь передаем только id категории (как список)
+      if (this.form.category) {
+        formData.append('categories', this.form.category);  // Отправляем только id категории
+      }
 
       if (this.form.image) {
         formData.append('image', this.form.image);
       }
 
-      
-      const token = localStorage.getItem('authToken'); 
+      const token = localStorage.getItem('authToken');
 
       if (!token) {
         console.error('Токен не найден!');
         alert('Ошибка: не найден токен! Пожалуйста, авторизуйтесь снова.');
-        return; 
+        return;
       }
 
       try {
-        
         await axios.post('http://localhost:8000/api/posts/', formData, {
           headers: {
             'Authorization': `Token ${token}`,
@@ -145,12 +147,9 @@ export default {
           },
         });
 
-        
         this.$router.push('/');
-        this.$root.$emit('fetch-posts'); 
-
+        this.$root.$emit('fetch-posts');
       } catch (error) {
-       
         console.error('Ошибка при отправке поста:', error);
         if (error.response && error.response.status === 401) {
           console.error('Неверный токен или отсутствует авторизация');
