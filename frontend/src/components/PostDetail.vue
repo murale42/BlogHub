@@ -2,8 +2,8 @@
   <div class="wrapper">
     <HeaderComponent />
 
-    <div class="content-container col d-flex justify-content-center">
-      <div class="card" style="width: 40rem;">
+    <div class="content-container d-flex justify-content-center">
+      <div class="card post-detail-card">
         <div class="card-body">
 
           <!-- РЕЖИМ ПРОСМОТРА -->
@@ -35,13 +35,9 @@
 
             <div v-if="userIsAuthor" class="mt-3 text-start">
               <span class="text-muted">
-                <a v-if="post.image" href="#" @click.prevent="mode = 'edit'" class="text-decoration-underline">
+                <a href="#" @click.prevent="mode = 'edit'" class="text-decoration-underline">
                   Редактировать текст поста
                 </a>
-                <a v-else href="#" @click.prevent="mode = 'edit'" class="text-decoration-underline">
-                  Редактировать текст поста
-                </a>
-
                 <span v-if="post.image" class="mx-2"></span>
                 <a href="#" @click.prevent="mode = 'confirm-delete'" class="text-decoration-underline">
                   Удалить
@@ -135,7 +131,7 @@ export default {
         });
         this.post = response.data;
         this.form.title = this.post.title;
-        this.form.text = this.post.text;
+        this.form.text = this.post.content;
       } catch (error) {
         console.error('Ошибка при загрузке поста', error);
       }
@@ -190,13 +186,30 @@ export default {
 .content-container {
   flex: 1;
   padding-top: 20px;
+  align-items: flex-start;
 }
 
-.card {
-  margin-bottom: 2rem;
+/* ✅ Уникальный стиль, только для PostDetail */
+.post-detail-card {
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 1rem;
+  height: auto;
 }
 
-.text-start {
-  text-align: left;
+.post-detail-card .card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+}
+
+.post-detail-card .card-body p:last-child {
+  margin-bottom: 0;
+}
+
+form textarea {
+  min-height: 50px;
+  resize: vertical;
 }
 </style>
