@@ -194,7 +194,8 @@ class RepostView(APIView):
             image=original_post.image,
             video=original_post.video,
             author=request.user,
-            repost_from=original_post
+            repost_from=original_post,
+            category=original_post.category  
         )
         repost.categories.set(original_post.categories.all())
         repost.save()

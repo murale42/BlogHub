@@ -28,7 +28,7 @@ class Post(models.Model):
     content = RichTextField(verbose_name='Текст')  
     image = models.ImageField(upload_to='post_images/', blank=True, null=True)
     video = models.FileField(upload_to='post_videos/', blank=True, null=True)
-    categories = models.ManyToManyField(Category, related_name='posts', verbose_name='Категория')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='posts', verbose_name='Категория')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts', verbose_name='Автор публикации')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
