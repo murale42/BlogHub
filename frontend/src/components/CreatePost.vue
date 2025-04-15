@@ -73,7 +73,7 @@ export default {
         text: '',
         image: null,
         pub_date: new Date().toISOString().slice(0, 16),
-        category: null, // Здесь сохраняем только id категории
+        category: null,
         location: { name: 'Планета Земля', is_published: true },
       },
       categories: [],
@@ -122,9 +122,8 @@ export default {
       formData.append('content', this.form.text);
       formData.append('pub_date', this.form.pub_date);
 
-      // Теперь передаем только id категории (как список)
       if (this.form.category) {
-        formData.append('categories', this.form.category);  // Отправляем только id категории
+        formData.append('category_id', this.form.category); 
       }
 
       if (this.form.image) {
@@ -151,66 +150,59 @@ export default {
         this.$root.$emit('fetch-posts');
       } catch (error) {
         console.error('Ошибка при отправке поста:', error);
-        if (error.response && error.response.status === 401) {
-          console.error('Неверный токен или отсутствует авторизация');
+        if (error.response) {
+          console.error('Ответ сервера:', error.response.data);
+          alert('Ошибка: ' + JSON.stringify(error.response.data, null, 2));
         }
       }
-    }
+    },
   },
 };
 </script>
 
 <style scoped>
-.card {
-  margin-top: 0.5rem;
-  width: 100%;
-  max-width: 40rem;
-  margin-bottom: 0.5rem;
-}
-
-.card-header {
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 0.75rem;
-}
-
-.card-body {
-  padding: 0.75rem;
-}
-
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
-
-.form-control {
-  border-radius: 0.25rem;
-  border-color: #ddd;
-  font-size: 0.8rem;
-  padding: 0.25rem 0.5rem;
-  height: 1.8rem;
-}
-
-.btn-create {
-  background-color: #a025dd;
-  border-color: #a025dd;
-  color: #fff;
-  font-size: 0.8rem;
-  padding: 0.3rem 0.8rem;
-}
-
-.btn-create:hover {
-  background-color: #702197;
-  border-color: #702197;
-  color: #fff;
-}
-
-.form-label {
-  font-weight: 500;
-  font-size: 0.8rem;
-}
-
-.text-muted {
-  font-size: 0.8rem;
-  color: #888;
-}
+  .card {
+    margin-top: 0.5rem;
+    width: 100%;
+    max-width: 40rem;
+    margin-bottom: 0.5rem;
+  }
+  .card-header {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.75rem;
+  }
+  .card-body {
+    padding: 0.75rem;
+  }
+  .mb-2 {
+    margin-bottom: 0.5rem;
+  }
+  .form-control {
+    border-radius: 0.25rem;
+    border-color: #ddd;
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    height: 1.8rem;
+  }
+  .btn-create {
+    background-color: #a025dd;
+    border-color: #a025dd;
+    color: #fff;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.8rem;
+  }
+  .btn-create:hover {
+    background-color: #702197;
+    border-color: #702197;
+    color: #fff;
+  }
+  .form-label {
+    font-weight: 500;
+    font-size: 0.8rem;
+  }
+  .text-muted {
+    font-size: 0.8rem;
+    color: #888;
+  }
 </style>
