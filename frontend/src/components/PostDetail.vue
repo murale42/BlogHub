@@ -9,22 +9,24 @@
           <!-- РЕЖИМ ПРОСМОТРА -->
           <template v-if="mode === 'view'">
             <h5 class="card-title">{{ post.title }}</h5>
-            <h6 class="card-subtitle mb-2 text-muted">
+            
+            <h6 class="card-subtitle mb-2 text-muted" style="margin-top: 20px;">
               <small>
                 <span v-if="post.is_published === false" class="text-danger">
                   Пост снят с публикации админом
                 </span>
                 {{ formattedDate }}<br />
                 <span v-if="post.author && post.author.username">
-                  От автора <span class="text-muted">@{{ post.author.username }}</span> в категории {{ post.category }}
+                  От автора <span class="text-muted">@{{ post.author.username }}</span> в категории {{ post.category?.name || 'Без категории' }}
                 </span>
+
                 <span v-else>
-                  От автора (неизвестный) в категории {{ post.category }}
+                  От автора (неизвестный) в категории {{ post.category?.name || 'Без категории' }}
                 </span>
               </small>
             </h6>
 
-            <p v-if="post.content" class="card-text" v-html="post.content"></p>
+            <p v-if="post.content" class="card-text" v-html="post.content" style="margin-top: 15px;"></p>
             <p v-else>Текст поста не доступен.</p>
 
             <img
@@ -44,7 +46,13 @@
                 </a>
               </span>
             </div>
+
+            <div class="actions mt-3 d-flex">
+              <img src="../assets/heart.png" alt="Like" class="action-icon me-3" />
+              <img src="../assets/share.png" alt="Share" class="action-icon" />
+            </div>
           </template>
+          
 
           <!-- РЕЖИМ РЕДАКТИРОВАНИЯ -->
           <template v-else-if="mode === 'edit'">
@@ -70,6 +78,7 @@
     <FooterComponent />
   </div>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -101,15 +110,22 @@ export default {
   },
   computed: {
     formattedDate() {
-      if (!this.post.pub_date) return '';
-      const date = new Date(this.post.pub_date);
-      return date.toLocaleString('ru-RU', {
-        day: '2-digit',
+      if (!this.post.created_at) return '';
+      const date = new Date(this.post.created_at);
+
+      const dateFormatted = date.toLocaleDateString('ru-RU', {
+        day: 'numeric',
         month: 'long',
         year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
       });
+
+      const timeFormatted = date.toLocaleTimeString('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+
+      return `${dateFormatted}, ${timeFormatted}`;
     },
     userIsAuthor() {
       const currentUser = localStorage.getItem('username');
@@ -176,6 +192,8 @@ export default {
 };
 </script>
 
+
+
 <style scoped>
 .wrapper {
   display: flex;
@@ -189,7 +207,6 @@ export default {
   align-items: flex-start;
 }
 
-/* ✅ Уникальный стиль, только для PostDetail */
 .post-detail-card {
   width: 100%;
   max-width: 800px;
@@ -208,8 +225,29 @@ export default {
   margin-bottom: 0;
 }
 
+.card-subtitle {
+  margin-top: 20px;
+}
+
+.card-text {
+  margin-top: 15px;
+}
+
 form textarea {
   min-height: 50px;
   resize: vertical;
 }
+
+.actions {
+  display: flex;
+  justify-content: start;
+  
+}
+
+.action-icon {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
 </style>
+
