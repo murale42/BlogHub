@@ -1,7 +1,6 @@
 from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import RegisterSerializer, LoginSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer, ChangePasswordSerializer, AuthorSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django.utils.http import urlsafe_base64_encode
@@ -13,7 +12,14 @@ from rest_framework.generics import RetrieveAPIView
 from django.contrib.auth import get_user_model
 from blog.permissions import IsAuthorOrReadOnly, IsCommentAuthorOrReadOnly
 from blog.models import Post, Category, Comment, Like
-from blog.serializers import PostSerializer, CategorySerializer, CommentSerializer
+from blog.serializers import (
+    RegisterSerializer, LoginSerializer, PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer, ChangePasswordSerializer,
+    AuthorSerializer, PostSerializer, CategorySerializer,
+    CommentSerializer
+)
+
+User = get_user_model()
 
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
@@ -33,7 +39,7 @@ class LoginView(APIView):
             access_token = str(refresh.access_token)
             return Response({"access": access_token}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 class ProtectedView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -72,7 +78,7 @@ class PasswordResetConfirmView(APIView):
             serializer.save()
             return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -94,7 +100,7 @@ class PostListCreateView(generics.ListCreateAPIView):
 class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthorOrReadOnly]
 
 class CategoryListView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
@@ -111,7 +117,7 @@ class PostsByCategoryView(generics.ListAPIView):
 
     def get_queryset(self):
         category_slug = self.kwargs['slug']
-        return Post.objects.filter(categories__slug=category_slug)
+        return Post.objects.filter(category__slug=category_slug)
 
 class PostsByAuthorView(generics.ListAPIView):
     serializer_class = PostSerializer
@@ -120,13 +126,6 @@ class PostsByAuthorView(generics.ListAPIView):
     def get_queryset(self):
         author_username = self.kwargs['username']
         return Post.objects.filter(author__username=author_username)
-
-class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-    permission_classes = [IsAuthorOrReadOnly]
-
-User = get_user_model()
 
 class AuthorDetailView(RetrieveAPIView):
     queryset = User.objects.all()
@@ -170,7 +169,7 @@ class UnlikePostView(APIView):
             return Response({"message": "Like removed."}, status=status.HTTP_204_NO_CONTENT)
         except Like.DoesNotExist:
             return Response({"message": "You have not liked this post."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
 class RepostView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -180,7 +179,6 @@ class RepostView(APIView):
         except Post.DoesNotExist:
             return Response({"message": "Original post not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Проверка: репостил ли уже этот пользователь
         existing_repost = Post.objects.filter(author=request.user, repost_from=original_post).first()
         if existing_repost:
             return Response(
@@ -195,10 +193,8 @@ class RepostView(APIView):
             video=original_post.video,
             author=request.user,
             repost_from=original_post,
-            category=original_post.category  
+            category=original_post.category
         )
-        repost.categories.set(original_post.categories.all())
-        repost.save()
 
         serializer = PostSerializer(repost, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
