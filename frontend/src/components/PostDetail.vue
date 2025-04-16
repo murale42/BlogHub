@@ -51,7 +51,10 @@
               <img src="../assets/heart.png" alt="Like" class="action-icon me-3" />
               <img src="../assets/share.png" alt="Share" class="action-icon" />
             </div>
+            <PostComments v-if="post.id" :postId="Number(post.id)" />
+
           </template>
+          
           
 
           <!-- РЕЖИМ РЕДАКТИРОВАНИЯ -->
@@ -85,12 +88,15 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 import HeaderComponent from './Header.vue';
 import FooterComponent from './Footer.vue';
+import PostComments from './PostComments.vue';
+
 
 export default {
   name: 'PostDetail',
   components: {
     HeaderComponent,
-    FooterComponent
+    FooterComponent,
+    PostComments
   },
   props: {
     id: {

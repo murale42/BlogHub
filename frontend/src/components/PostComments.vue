@@ -1,8 +1,7 @@
 <template>
   <div class="p-3">
-    <h5 class="mb-3">Комментарии</h5>
+    <h5 class="mb-3">Оставить комментарий</h5>
 
-   
     <div v-if="userAuthenticated">
       <form @submit.prevent="submitComment">
         <div class="mb-2">
@@ -10,35 +9,27 @@
             v-model="newComment"
             class="form-control"
             rows="3"
-            placeholder="Оставьте комментарий..."
+            placeholder="Текст комментария"
           ></textarea>
         </div>
-        <button type="submit" class="btn btn-primary btn-sm">Отправить</button>
+        <button type="submit" class="btn btn-purple btn-sm">Отправить</button>
       </form>
     </div>
     <div v-else class="text-muted">Войдите, чтобы оставить комментарий.</div>
 
     <hr />
 
-   
     <div v-if="comments.length">
-      <div
-        v-for="comment in comments"
-        :key="comment.id"
-        class="mb-3"
-      >
+      <div v-for="comment in comments" :key="comment.id" class="mb-3">
         <h6>
           <a :href="'/profile/' + comment.author">@{{ comment.author }}</a>
           <small class="text-muted ms-2">{{ comment.date }}</small>
         </h6>
         <p>{{ comment.text }}</p>
 
-        <div
-          v-if="comment.author === currentUser"
-          class="text-muted small"
-        >
-          <a href="#" class="me-2">Редактировать</a>
-          <a href="#">Удалить</a>
+        <div v-if="comment.author === currentUser" class="text-muted small">
+          <a href="#" class="me-2" @click.prevent="editComment(comment.id)">Редактировать</a>
+          <a href="#" @click.prevent="deleteComment(comment.id)">Удалить</a>
         </div>
         <hr />
       </div>
@@ -65,13 +56,19 @@ export default {
   },
   mounted() {
     this.checkAuth();
-    this.fetchComments();
+    this.fetchCommentsIfNeeded();
+  },
+  watch: {
+    postId(newId) {
+      if (newId) {
+        this.fetchComments();
+      }
+    }
   },
   methods: {
-    
     checkAuth() {
       const token = localStorage.getItem("authToken");
-      const username = localStorage.getItem("username"); 
+      const username = localStorage.getItem("username");
 
       if (token && username) {
         this.userAuthenticated = true;
@@ -79,10 +76,23 @@ export default {
       }
     },
 
-   
+    fetchCommentsIfNeeded() {
+      if (this.postId) {
+        this.fetchComments();
+      } else {
+        console.error('postId is not available');
+      }
+    },
+
     async fetchComments() {
+      if (!this.postId) {
+        console.error("postId is not available");
+        return;
+      }
+
       try {
-        const response = await fetch(`/api/posts/${this.postId}/comments/`);
+        console.log(`Запрос комментариев для поста с ID: ${this.postId}`);
+        const response = await fetch(`http://localhost:8000/api/posts/${this.postId}/comments/`);
         if (!response.ok) throw new Error("Ошибка при загрузке комментариев");
 
         const data = await response.json();
@@ -94,31 +104,31 @@ export default {
         }));
       } catch (error) {
         console.error("Ошибка загрузки комментариев:", error);
+        alert('Не удалось загрузить комментарии');
       }
     },
 
-  
     async submitComment() {
       if (this.newComment.trim() === "") return;
 
       try {
         const token = localStorage.getItem("authToken");
-
-        const response = await fetch(`/api/posts/${this.postId}/comments/`, {
+        const response = await fetch(`http://localhost:8000/api/posts/${this.postId}/comments/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Token ${token}`
           },
           body: JSON.stringify({
-            content: this.newComment
+            content: this.newComment,
+            post: this.postId
           })
+
         });
 
         if (!response.ok) throw new Error("Ошибка при отправке комментария");
 
         const createdComment = await response.json();
-
         this.comments.unshift({
           id: createdComment.id,
           author: createdComment.author,
@@ -129,7 +139,31 @@ export default {
         this.newComment = "";
       } catch (error) {
         console.error("Ошибка при добавлении комментария:", error);
+        alert('Не удалось отправить комментарий');
       }
+    },
+
+    async deleteComment(commentId) {
+      const token = localStorage.getItem("authToken");
+      try {
+        const response = await fetch(`http://localhost:8000/api/comments/${commentId}/`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Token ${token}`
+          }
+        });
+
+        if (!response.ok) throw new Error("Ошибка при удалении комментария");
+
+        this.comments = this.comments.filter(comment => comment.id !== commentId);
+      } catch (error) {
+        console.error("Ошибка при удалении комментария:", error);
+        alert('Не удалось удалить комментарий');
+      }
+    },
+
+    async editComment(commentId) {
+      console.log("Редактировать комментарий с ID:", commentId);
     }
   }
 };
@@ -144,5 +178,14 @@ a {
 }
 a:hover {
   text-decoration: underline;
+}
+
+.btn-purple {
+  background-color: #6a1b9a;
+  color: white;
+}
+
+.btn-purple:hover {
+  background-color: #9c4dcc;
 }
 </style>
