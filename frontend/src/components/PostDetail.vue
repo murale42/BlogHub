@@ -5,11 +5,9 @@
     <div class="content-container d-flex justify-content-center">
       <div class="card post-detail-card">
         <div class="card-body">
-
-          <!-- РЕЖИМ ПРОСМОТРА -->
           <template v-if="mode === 'view'">
             <h5 class="card-title">{{ post.title }}</h5>
-            
+
             <h6 class="card-subtitle mb-2 text-muted" style="margin-top: 20px;">
               <small>
                 <span v-if="post.is_published === false" class="text-danger">
@@ -17,9 +15,9 @@
                 </span>
                 {{ formattedDate }}<br />
                 <span v-if="post.author && post.author.username">
-                  От автора <span class="text-muted">@{{ post.author.username }}</span> в категории {{ post.category?.name || 'Без категории' }}
+                  От автора <span class="text-muted">@{{ post.author.username }}</span>
+                  в категории {{ post.category?.name || 'Без категории' }}
                 </span>
-
                 <span v-else>
                   От автора (неизвестный) в категории {{ post.category?.name || 'Без категории' }}
                 </span>
@@ -47,17 +45,25 @@
               </span>
             </div>
 
-            <div class="actions mt-3 d-flex">
-              <img src="../assets/heart.png" alt="Like" class="action-icon me-3" />
-              <img src="../assets/share.png" alt="Share" class="action-icon" />
+            <div class="actions mt-3 d-flex align-items-center">
+              <img
+                :src="isLiked ? heart2 : heart"
+                alt="Like"
+                class="action-icon me-2"
+                @click="toggleLike"
+              />
+              <span class="me-4">{{ likeCount }}</span>
+
+              <img
+                :src="isReposted ? repost2 : repost"
+                alt="Repost"
+                class="action-icon me-2"
+                @click="toggleRepost"
+              />
+              <span>{{ repostCount }}</span>
             </div>
-            <PostComments v-if="post.id" :postId="Number(post.id)" />
-
           </template>
-          
-          
 
-          <!-- РЕЖИМ РЕДАКТИРОВАНИЯ -->
           <template v-else-if="mode === 'edit'">
             <form @submit.prevent="submitEdit">
               <input v-model="form.title" class="form-control mb-2" placeholder="Заголовок" />
@@ -67,13 +73,11 @@
             </form>
           </template>
 
-          <!-- ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ -->
           <template v-else-if="mode === 'confirm-delete'">
             <p>Вы уверены, что хотите удалить пост?</p>
             <button class="btn btn-sm btn-danger me-2" @click="deletePost">Да, удалить</button>
             <button class="btn btn-sm btn-secondary" @click="mode = 'view'">Отмена</button>
           </template>
-
         </div>
       </div>
     </div>
@@ -82,7 +86,6 @@
   </div>
 </template>
 
-
 <script>
 import axios from 'axios';
 import { useRouter } from 'vue-router';
@@ -90,6 +93,10 @@ import HeaderComponent from './Header.vue';
 import FooterComponent from './Footer.vue';
 import PostComments from './PostComments.vue';
 
+import heart from '@/assets/heart.png';
+import heart2 from '@/assets/heart2.png';
+import repost from '@/assets/repost.png';
+import repost2 from '@/assets/repost2.png';
 
 export default {
   name: 'PostDetail',
@@ -111,26 +118,31 @@ export default {
         title: '',
         text: ''
       },
-      mode: 'view'
+      mode: 'view',
+      isLiked: false,
+      isReposted: false,
+      likeCount: 0,
+      repostCount: 0,
+      heart,
+      heart2,
+      repost,
+      repost2
     };
   },
   computed: {
     formattedDate() {
       if (!this.post.created_at) return '';
       const date = new Date(this.post.created_at);
-
       const dateFormatted = date.toLocaleDateString('ru-RU', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
       });
-
       const timeFormatted = date.toLocaleTimeString('ru-RU', {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
       });
-
       return `${dateFormatted}, ${timeFormatted}`;
     },
     userIsAuthor() {
@@ -154,6 +166,10 @@ export default {
         this.post = response.data;
         this.form.title = this.post.title;
         this.form.text = this.post.content;
+        this.isLiked = this.post.is_liked;
+        this.isReposted = this.post.is_reposted;
+        this.likeCount = this.post.like_count;
+        this.repostCount = this.post.repost_count;
       } catch (error) {
         console.error('Ошибка при загрузке поста', error);
       }
@@ -193,12 +209,55 @@ export default {
       } catch (error) {
         console.error('Ошибка при удалении', error);
       }
+    },
+    async toggleLike() {
+      const token = localStorage.getItem('authToken');
+      const url = `http://localhost:8000/api/posts/${this.post.id}/${this.isLiked ? 'unlike' : 'like'}/`;
+
+      try {
+        await axios({
+          method: this.isLiked ? 'delete' : 'post',
+          url,
+          headers: {
+            Authorization: `Token ${token}`
+          }
+        });
+
+        this.isLiked = !this.isLiked;
+        this.likeCount += this.isLiked ? 1 : -1;
+
+      } catch (error) {
+        console.error('Ошибка при переключении лайка', error);
+      }
+    },
+    async toggleRepost() {
+      const token = localStorage.getItem('authToken');
+
+      try {
+        if (this.isReposted) {
+          await axios.delete(`http://localhost:8000/api/posts/${this.post.id}/repost/`, {
+            headers: {
+              Authorization: `Token ${token}`
+            }
+          });
+          this.isReposted = false;
+          this.repostCount -= 1;
+        } else {
+          await axios.post(`http://localhost:8000/api/posts/${this.post.id}/repost/`, {}, {
+            headers: {
+              Authorization: `Token ${token}`
+            }
+          });
+          this.isReposted = true;
+          this.repostCount += 1;
+        }
+      } catch (error) {
+        console.error('Ошибка при переключении репоста', error);
+      }
     }
   }
 };
 </script>
-
-
 
 <style scoped>
 .wrapper {
@@ -247,7 +306,8 @@ form textarea {
 .actions {
   display: flex;
   justify-content: start;
-  
+  align-items: center;
+  margin-top: 10px;
 }
 
 .action-icon {
@@ -256,4 +316,3 @@ form textarea {
   cursor: pointer;
 }
 </style>
-
