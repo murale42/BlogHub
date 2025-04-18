@@ -34,16 +34,17 @@
             />
 
             <div v-if="userIsAuthor" class="mt-3 text-start">
-              <span class="text-muted">
-                <a href="#" @click.prevent="mode = 'edit'" class="text-decoration-underline">
-                  Редактировать текст поста
-                </a>
-                <span v-if="post.image" class="mx-2"></span>
-                <a href="#" @click.prevent="mode = 'confirm-delete'" class="text-decoration-underline">
-                  Удалить
-                </a>
-              </span>
-            </div>
+  <span class="text-muted">
+    <a href="#" @click.prevent="mode = 'edit'" class="text-decoration-none">
+      Редактировать текст поста
+    </a>
+    <span v-if="post.image" class="mx-2"></span>
+    <a href="#" @click.prevent="mode = 'confirm-delete'" class="text-decoration-none">
+      Удалить
+    </a>
+  </span>
+</div>
+
 
             <div class="actions mt-3 d-flex align-items-center">
               <img
@@ -80,7 +81,7 @@
           </template>
         </div>
 
-        <!-- Компонент комментариев -->
+       
         <PostComments v-if="post.id" :postId="post.id" />
       </div>
     </div>
@@ -88,6 +89,7 @@
     <FooterComponent />
   </div>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -114,6 +116,7 @@ export default {
       required: true
     }
   },
+  emits: ['remove-post'],
   data() {
     return {
       post: {},
@@ -158,10 +161,9 @@ export default {
   },
   methods: {
     async fetchPost() {
-      const { id } = this;
       const token = localStorage.getItem('authToken');
       try {
-        const response = await axios.get(`http://localhost:8000/api/posts/${id}/`, {
+        const response = await axios.get(`http://localhost:8000/api/posts/${this.id}/`, {
           headers: {
             Authorization: `Token ${token}`
           }
@@ -177,42 +179,32 @@ export default {
         console.error('Ошибка при загрузке поста', error);
       }
     },
-    async submitEdit() {
+    async toggleRepost() {
       const token = localStorage.getItem('authToken');
+      const config = {
+        headers: {
+          Authorization: `Token ${token}`
+        }
+      };
+
       try {
-        await axios.put(`http://localhost:8000/api/posts/${this.post.id}/`, {
-          title: this.form.title,
-          content: this.form.text
-        }, {
-          headers: {
-            Authorization: `Token ${token}`
-          }
-        });
-        this.mode = 'view';
-        this.fetchPost();
+        if (this.isReposted) {
+          await axios.delete(`http://localhost:8000/api/posts/${this.post.id}/unrepost/`, config);
+          this.isReposted = false;
+          this.repostCount -= 1;
+
+        
+          this.$emit('remove-post', this.post.id);
+        } else {
+          await axios.post(`http://localhost:8000/api/posts/${this.post.id}/repost/`, {}, config);
+          this.isReposted = true;
+          this.repostCount += 1;
+        }
       } catch (error) {
-        console.error('Ошибка при редактировании', error);
+        console.error('Ошибка при переключении репоста', error);
       }
     },
-    cancelEdit() {
-      this.form.title = this.post.title;
-      this.form.text = this.post.content;
-      this.mode = 'view';
-    },
-    async deletePost() {
-      const router = useRouter();
-      const token = localStorage.getItem('authToken');
-      try {
-        await axios.delete(`http://localhost:8000/api/posts/${this.post.id}/`, {
-          headers: {
-            Authorization: `Token ${token}`
-          }
-        });
-        router.push('/');
-      } catch (error) {
-        console.error('Ошибка при удалении', error);
-      }
-    },
+
     async toggleLike() {
       const token = localStorage.getItem('authToken');
       const url = `http://localhost:8000/api/posts/${this.post.id}/${this.isLiked ? 'unlike' : 'like'}/`;
@@ -233,34 +225,49 @@ export default {
         console.error('Ошибка при переключении лайка', error);
       }
     },
-    async toggleRepost() {
-      const token = localStorage.getItem('authToken');
 
+    async submitEdit() {
+      const token = localStorage.getItem('authToken');
       try {
-        if (this.isReposted) {
-          await axios.delete(`http://localhost:8000/api/posts/${this.post.id}/repost/`, {
-            headers: {
-              Authorization: `Token ${token}`
-            }
-          });
-          this.isReposted = false;
-          this.repostCount -= 1;
-        } else {
-          await axios.post(`http://localhost:8000/api/posts/${this.post.id}/repost/`, {}, {
-            headers: {
-              Authorization: `Token ${token}`
-            }
-          });
-          this.isReposted = true;
-          this.repostCount += 1;
-        }
+        await axios.put(`http://localhost:8000/api/posts/${this.post.id}/`, {
+          title: this.form.title,
+          content: this.form.text
+        }, {
+          headers: {
+            Authorization: `Token ${token}`
+          }
+        });
+        this.mode = 'view';
+        this.fetchPost();
       } catch (error) {
-        console.error('Ошибка при переключении репоста', error);
+        console.error('Ошибка при редактировании', error);
+      }
+    },
+
+    cancelEdit() {
+      this.form.title = this.post.title;
+      this.form.text = this.post.content;
+      this.mode = 'view';
+    },
+
+    async deletePost() {
+      const router = useRouter();
+      const token = localStorage.getItem('authToken');
+      try {
+        await axios.delete(`http://localhost:8000/api/posts/${this.post.id}/`, {
+          headers: {
+            Authorization: `Token ${token}`
+          }
+        });
+        router.push('/');
+      } catch (error) {
+        console.error('Ошибка при удалении', error);
       }
     }
   }
 };
 </script>
+
 
 <style scoped>
 .wrapper {
@@ -318,4 +325,17 @@ form textarea {
   height: 30px;
   cursor: pointer;
 }
+
+
+.text-muted a {
+  color: #6c757d; 
+  text-decoration: none;
+}
+
+.text-muted a:hover {
+  color: #5a6268; 
+  text-decoration: none;
+}
+
+
 </style>

@@ -32,8 +32,7 @@ urlpatterns = [
     path('api/posts/<int:post_id>/like/', LikePostView.as_view(), name='like-post'),
     path('api/posts/<int:post_id>/unlike/', UnlikePostView.as_view(), name='unlike-post'),
     path('api/posts/<int:post_id>/repost/', RepostView.as_view(), name='repost-post'),
-    path('posts/<int:post_id>/repost/', RepostView.as_view(), name='post-repost'),
-    path('posts/<int:post_id>/unrepost/', UnrepostView.as_view(), name='post-unrepost'),
+    path('api/posts/<int:post_id>/unrepost/', UnrepostView.as_view(), name='unrepost-post'),
     path('posts/<int:post_id>/toggle-favorite/', ToggleFavoritePostView.as_view(), name='toggle-favorite'),
 ]
 
