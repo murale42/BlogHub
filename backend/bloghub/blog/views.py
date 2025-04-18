@@ -11,7 +11,7 @@ from django.template.loader import render_to_string
 from rest_framework.generics import RetrieveAPIView
 from django.contrib.auth import get_user_model
 from blog.permissions import IsAuthorOrReadOnly, IsCommentAuthorOrReadOnly
-from blog.models import Post, Category, Comment, Like
+from blog.models import Post, Category, Comment, Like, Favorite
 from blog.serializers import (
     RegisterSerializer, LoginSerializer, PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer, ChangePasswordSerializer,
@@ -198,3 +198,31 @@ class RepostView(APIView):
 
         serializer = PostSerializer(repost, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class UnrepostView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, post_id):
+        try:
+            original_post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return Response({"message": "Original post not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        repost = Post.objects.filter(author=request.user, repost_from=original_post).first()
+        if repost:
+            repost.delete()
+            return Response({"message": "Repost removed."}, status=status.HTTP_204_NO_CONTENT)
+
+        return Response({"message": "You have not reposted this post."}, status=status.HTTP_400_BAD_REQUEST)
+
+class ToggleFavoritePostView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id):
+        post = Post.objects.get(id=post_id)
+        favorite, created = Favorite.objects.get_or_create(user=request.user, post=post)
+        if created:
+            return Response({"message": "Post added to favorites.", "favorited": True}, status=status.HTTP_201_CREATED)
+        else:
+            favorite.delete()
+            return Response({"message": "Post removed from favorites.", "favorited": False}, status=status.HTTP_200_OK)

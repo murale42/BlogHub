@@ -79,6 +79,9 @@
             <button class="btn btn-sm btn-secondary" @click="mode = 'view'">Отмена</button>
           </template>
         </div>
+
+        <!-- Компонент комментариев -->
+        <PostComments v-if="post.id" :postId="post.id" />
       </div>
     </div>
 
