@@ -23,13 +23,14 @@
       <div v-for="comment in comments" :key="comment.id" class="mb-3">
         <h6>
           <a :href="'/profile/' + comment.author">@{{ comment.author }}</a>
-          <small class="text-muted ms-2">{{ comment.date }}</small>
         </h6>
+        <small class="text-muted">{{ comment.date }}</small>
+
         <p>{{ comment.text }}</p>
 
         <div v-if="comment.author === currentUser" class="text-muted small">
-          <a href="#" class="me-2" @click.prevent="editComment(comment.id)">Редактировать</a>
-          <a href="#" @click.prevent="deleteComment(comment.id)">Удалить</a>
+          <a href="#" class="me-2" @click.prevent="editComment(comment.id)">Отредактировать комментарий</a>
+          <a href="#" @click.prevent="deleteComment(comment.id)">Удалить комментарий</a>
         </div>
         <hr />
       </div>
@@ -84,6 +85,17 @@ export default {
       }
     },
 
+    formatDate(datetime) {
+      const date = new Date(datetime);
+      const optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
+      const optionsTime = { hour: '2-digit', minute: '2-digit' };
+
+      const formattedDate = new Intl.DateTimeFormat('ru-RU', optionsDate).format(date).replace(' г.', '');
+      const formattedTime = new Intl.DateTimeFormat('ru-RU', optionsTime).format(date);
+
+      return `${formattedDate}, ${formattedTime}`;
+    },
+
     async fetchComments() {
       if (!this.postId) {
         console.error("postId is not available");
@@ -91,7 +103,6 @@ export default {
       }
 
       try {
-        console.log(`Запрос комментариев для поста с ID: ${this.postId}`);
         const response = await fetch(`http://localhost:8000/api/posts/${this.postId}/comments/`);
         if (!response.ok) throw new Error("Ошибка при загрузке комментариев");
 
@@ -100,7 +111,7 @@ export default {
           id: comment.id,
           author: comment.author,
           text: comment.content,
-          date: new Date(comment.created_at).toLocaleDateString("ru-RU")
+          date: this.formatDate(comment.created_at)
         }));
       } catch (error) {
         console.error("Ошибка загрузки комментариев:", error);
@@ -123,7 +134,6 @@ export default {
             content: this.newComment,
             post: this.postId
           })
-
         });
 
         if (!response.ok) throw new Error("Ошибка при отправке комментария");
@@ -133,7 +143,7 @@ export default {
           id: createdComment.id,
           author: createdComment.author,
           text: createdComment.content,
-          date: new Date(createdComment.created_at).toLocaleDateString("ru-RU")
+          date: this.formatDate(createdComment.created_at)
         });
 
         this.newComment = "";
@@ -169,13 +179,17 @@ export default {
 };
 </script>
 
+
 <style scoped>
 textarea.form-control {
   font-size: 0.9rem;
 }
+
 a {
   text-decoration: none;
+  color: inherit;
 }
+
 a:hover {
   text-decoration: underline;
 }
@@ -188,4 +202,25 @@ a:hover {
 .btn-purple:hover {
   background-color: #9c4dcc;
 }
+
+
+.text-muted a {
+  color: #6c757d;
+}
+
+.text-muted a:hover {
+  color: #5a6268;
+}
+
+
+h6 > a {
+  color: #0d6efd; 
+  font-weight: 500;
+}
+
+h6 > a:hover {
+  color: #0a58ca; 
+}
 </style>
+
+

@@ -114,6 +114,7 @@ class PostSerializer(serializers.ModelSerializer):
     is_repost = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
     is_reposted = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
 
     class Meta:
         model = Post

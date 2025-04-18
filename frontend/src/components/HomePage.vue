@@ -4,14 +4,16 @@
 
     <main>
       <div class="container py-5">
-        <div v-if="posts.length">
+        <transition-group name="fade" tag="div">
           <PostCard
             v-for="post in posts"
             :key="post.id"
             :post="post"
+            @remove-post="removePostFromList"
           />
-        </div>
-        <div v-else>
+        </transition-group>
+
+        <div v-if="!posts.length" class="mt-4">
           <p>Пока нет публикаций.</p>
         </div>
       </div>
@@ -45,17 +47,27 @@ export default {
     async fetchPosts() {
       try {
         const response = await axios.get('http://localhost:8000/api/posts/');
-
         this.posts = response.data;
       } catch (error) {
         console.error('Ошибка при загрузке постов:', error);
       }
+    },
+    removePostFromList(postId) {
+      this.posts = this.posts.filter(p => p.id !== postId);
     }
   }
 };
 </script>
 
 <style scoped>
+.fade-enter-active, .fade-leave-active {
+  transition: all 0.5s ease;
+}
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
 .wrapper {
   display: flex;
   flex-direction: column;
