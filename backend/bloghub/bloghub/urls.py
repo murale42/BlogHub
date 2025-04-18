@@ -6,7 +6,7 @@ from django.urls import path
 from django.http import HttpResponse
 from rest_framework.authtoken.views import obtain_auth_token
 from blog.views import RegisterView, LoginView, ProtectedView, PostListCreateView, PostDetailView, CategoryDetailView, CategoryListView, PostsByCategoryView, PostsByAuthorView, AuthorDetailView, CommentListCreateView, CommentDetailView
-from blog.views import LikePostView, UnlikePostView, RepostView
+from blog.views import LikePostView, UnlikePostView, RepostView, UnrepostView, ToggleFavoritePostView
 
 def home(request):
     return HttpResponse("Добро пожаловать в BlogHub!")
@@ -32,6 +32,9 @@ urlpatterns = [
     path('api/posts/<int:post_id>/like/', LikePostView.as_view(), name='like-post'),
     path('api/posts/<int:post_id>/unlike/', UnlikePostView.as_view(), name='unlike-post'),
     path('api/posts/<int:post_id>/repost/', RepostView.as_view(), name='repost-post'),
+    path('posts/<int:post_id>/repost/', RepostView.as_view(), name='post-repost'),
+    path('posts/<int:post_id>/unrepost/', UnrepostView.as_view(), name='post-unrepost'),
+    path('posts/<int:post_id>/toggle-favorite/', ToggleFavoritePostView.as_view(), name='toggle-favorite'),
 ]
 
 # Подключение маршрутов для медиа-файлов

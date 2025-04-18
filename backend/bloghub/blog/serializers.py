@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
-from blog.models import Category, Post, Comment, Like
+from blog.models import Category, Post, Comment, Like, Favorite
 from rest_framework import serializers
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -122,7 +122,7 @@ class PostSerializer(serializers.ModelSerializer):
             'category', 'category_id', 'author',
             'created_at', 'updated_at', 'like_count',
             'repost_from', 'repost_count', 'is_repost',
-            'is_liked', 'is_reposted'
+            'is_liked', 'is_reposted', 'is_favorited'
         ]
 
     def get_author(self, obj):
@@ -159,6 +159,12 @@ class PostSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return Post.objects.filter(author=request.user, repost_from=obj).exists()
+        return False
+    
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.favorites.filter(user=request.user).exists()
         return False
 
 
