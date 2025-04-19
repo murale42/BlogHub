@@ -74,6 +74,8 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         self.user.set_password(new_password)
         self.user.save()
         return self.user
+    
+
 
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
@@ -169,6 +171,9 @@ class PostSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return obj.favorites.filter(user=request.user).exists()
         return False
+    
+    def get_comment_count(self, obj):
+        return obj.comments.count()
 
 
 User = get_user_model()
