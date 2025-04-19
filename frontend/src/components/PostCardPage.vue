@@ -22,7 +22,7 @@
             Читать полный текст
           </router-link>
 
-          <router-link :to="'/post/' + post.id + '/comments'" class="text-muted ms-2">
+          <router-link :to="'/post/' + post.id" class="text-muted ms-2">
             Комментарии ({{ post.comments_count || 0 }})
           </router-link>
         </div>

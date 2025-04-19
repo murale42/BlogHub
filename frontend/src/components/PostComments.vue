@@ -26,10 +26,25 @@
         </h6>
         <small class="text-muted">{{ comment.date }}</small>
 
-        <p>{{ comment.text }}</p>
+        <div v-if="editingCommentId === comment.id">
+          <textarea
+            v-model="editedCommentText"
+            class="form-control mb-2"
+            rows="3"
+          ></textarea>
+          <button class="btn btn-sm btn-purple me-2" @click="saveEditedComment(comment.id)">
+            Сохранить
+          </button>
+
+          <button class="btn btn-sm btn-secondary" @click="cancelEditing">
+            Отмена
+          </button>
+        </div>
+
+        <p v-else>{{ comment.text }}</p>
 
         <div v-if="comment.author === currentUser" class="text-muted small">
-          <a href="#" class="me-2" @click.prevent="editComment(comment.id)">Отредактировать комментарий</a>
+          <a href="#" class="me-2" @click.prevent="startEditing(comment)">Отредактировать комментарий</a>
           <a href="#" @click.prevent="deleteComment(comment.id)">Удалить комментарий</a>
         </div>
         <hr />
@@ -52,7 +67,9 @@ export default {
       userAuthenticated: false,
       currentUser: null,
       newComment: "",
-      comments: []
+      comments: [],
+      editingCommentId: null,
+      editedCommentText: ""
     };
   },
   mounted() {
@@ -81,7 +98,7 @@ export default {
       if (this.postId) {
         this.fetchComments();
       } else {
-        console.error('postId is not available');
+        console.error("postId is not available");
       }
     },
 
@@ -115,7 +132,7 @@ export default {
         }));
       } catch (error) {
         console.error("Ошибка загрузки комментариев:", error);
-        alert('Не удалось загрузить комментарии');
+        alert("Не удалось загрузить комментарии");
       }
     },
 
@@ -149,7 +166,7 @@ export default {
         this.newComment = "";
       } catch (error) {
         console.error("Ошибка при добавлении комментария:", error);
-        alert('Не удалось отправить комментарий');
+        alert("Не удалось отправить комментарий");
       }
     },
 
@@ -168,17 +185,58 @@ export default {
         this.comments = this.comments.filter(comment => comment.id !== commentId);
       } catch (error) {
         console.error("Ошибка при удалении комментария:", error);
-        alert('Не удалось удалить комментарий');
+        alert("Не удалось удалить комментарий");
       }
     },
 
-    async editComment(commentId) {
-      console.log("Редактировать комментарий с ID:", commentId);
+    startEditing(comment) {
+      this.editingCommentId = comment.id;
+      this.editedCommentText = comment.text;
+    },
+
+    cancelEditing() {
+      this.editingCommentId = null;
+      this.editedCommentText = "";
+    },
+
+    async saveEditedComment(commentId) {
+  const token = localStorage.getItem("authToken");
+
+  try {
+    const response = await fetch(`http://localhost:8000/api/comments/${commentId}/`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`
+      },
+      body: JSON.stringify({
+        content: this.editedCommentText,
+        post: this.postId 
+      })
+    });
+
+    const responseBody = await response.text();
+    if (!response.ok) {
+      console.error("Ответ сервера:", responseBody);
+      throw new Error("Ошибка при редактировании комментария");
     }
+
+    const updatedComment = JSON.parse(responseBody);
+
+    const index = this.comments.findIndex(c => c.id === commentId);
+    if (index !== -1) {
+      this.comments[index].text = updatedComment.content;
+    }
+
+    this.cancelEditing();
+  } catch (error) {
+    console.error("Ошибка при редактировании комментария:", error);
+    alert("Не удалось отредактировать комментарий");
+  }
+}
   }
 };
 </script>
-
 
 <style scoped>
 textarea.form-control {
@@ -203,7 +261,6 @@ a:hover {
   background-color: #9c4dcc;
 }
 
-
 .text-muted a {
   color: #6c757d;
 }
@@ -212,15 +269,12 @@ a:hover {
   color: #5a6268;
 }
 
-
 h6 > a {
-  color: #0d6efd; 
+  color: #0d6efd;
   font-weight: 500;
 }
 
 h6 > a:hover {
-  color: #0a58ca; 
+  color: #0a58ca;
 }
 </style>
-
-
