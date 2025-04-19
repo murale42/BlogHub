@@ -115,6 +115,7 @@ class PostSerializer(serializers.ModelSerializer):
     is_liked = serializers.SerializerMethodField()
     is_reposted = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
+    comment_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -123,7 +124,8 @@ class PostSerializer(serializers.ModelSerializer):
             'category', 'category_id', 'author',
             'created_at', 'updated_at', 'like_count',
             'repost_from', 'repost_count', 'is_repost',
-            'is_liked', 'is_reposted', 'is_favorited'
+            'is_liked', 'is_reposted', 'is_favorited',
+            'comment_count'
         ]
 
     def get_author(self, obj):
